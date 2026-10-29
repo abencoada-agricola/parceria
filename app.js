@@ -9,9 +9,6 @@ $('#steps').innerHTML=steps.map(([sign,label,desc,v])=>`<div class="step ${sign=
 const groups={};expenses.forEach(r=>{const name=r.description.replace(' - 50% - Leonardo','');groups[name]=(groups[name]||0)+r.plus;});const sorted=Object.entries(groups).sort((a,b)=>b[1]-a[1]);$('#expense-total').textContent=money(sum(expenses,'plus'));$('#expense-bars').innerHTML=sorted.map(([name,v])=>`<div class="expense-row"><div><span>${escapeHTML(name)}</span><b>${money(v)}</b></div><div class="expense-track"><div class="expense-fill" style="width:${v/sorted[0][1]*100}%"></div></div></div>`).join('');
 
 const normalize=s=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
-function renderLedger(){const q=normalize($('#search').value.trim()),t=$('#filter-type').value,list=records.filter(r=>(t==='all'||r.category===t)&&(!q||normalize(r.description).includes(q)));$('#ledger').innerHTML=list.map(r=>`<tr><td>${r.date}</td><td>${escapeHTML(r.description)}</td><td>${r.category}</td><td class="number">${r.plus?money(r.plus):'—'}</td><td class="number">${r.minus?money(r.minus):'—'}</td></tr>`).join('');$('#ledger-total').innerHTML=`<tr><td colspan="3">Total dos itens mostrados</td><td class="number">${money(sum(list,'plus'))}</td><td class="number">${money(sum(list,'minus'))}</td></tr>`;$('#table-status').textContent=`${list.length} de ${records.length} itens do acerto`;$('#empty').hidden=!!list.length;}
-$('#search').oninput=renderLedger;$('#filter-type').onchange=renderLedger;$('#clear').onclick=()=>{$('#search').value='';$('#filter-type').value='all';renderLedger();};renderLedger();$('#print').onclick=()=>{document.querySelectorAll('details').forEach(d=>d.open=true);window.print();};
-
 // Continuous report: every explanation stays visible.
 document.querySelectorAll('details').forEach(d=>d.open=true);
 $('#print').onclick=()=>window.print();
@@ -29,7 +26,7 @@ $('#expense-query').oninput=renderSpending;$('#expense-period').onchange=renderS
 
 // Print the complete report even when on-screen searches are active.
 let printFilters=null;
-window.addEventListener('beforeprint',()=>{printFilters={query:$('#expense-query').value,period:$('#expense-period').value,search:$('#search').value,type:$('#filter-type').value};$('#expense-query').value='';$('#expense-period').value='all';$('#search').value='';$('#filter-type').value='all';renderSpending();renderLedger();});
-window.addEventListener('afterprint',()=>{if(!printFilters)return;$('#expense-query').value=printFilters.query;$('#expense-period').value=printFilters.period;$('#search').value=printFilters.search;$('#filter-type').value=printFilters.type;renderSpending();renderLedger();printFilters=null;});
+window.addEventListener('beforeprint',()=>{printFilters={query:$('#expense-query').value,period:$('#expense-period').value};$('#expense-query').value='';$('#expense-period').value='all';renderSpending();});
+window.addEventListener('afterprint',()=>{if(!printFilters)return;$('#expense-query').value=printFilters.query;$('#expense-period').value=printFilters.period;renderSpending();printFilters=null;});
 
 $('#logout').onclick=()=>{sessionStorage.removeItem('parceria-login');location.replace('login.html');};
